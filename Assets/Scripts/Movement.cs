@@ -5,7 +5,7 @@ using UnityEngine;
 public class Movement : MonoBehaviour
 {
     public float accelerator = 10f;
-    public float jumpForce = 50f;
+    public float jumpForce = 7f;
 
     //check ground
     public Transform GroundCheck;
@@ -14,8 +14,8 @@ public class Movement : MonoBehaviour
 
     public LayerMask GroundLayerMask;
 
-    private bool _isGrounded = false;
-    private bool _isJumping = false;
+    protected bool _isGrounded = false;
+    protected bool _isJumping = false;
 
     protected Vector2 _inputDirection;
 
@@ -29,29 +29,20 @@ public class Movement : MonoBehaviour
         _collider2d = GetComponent<Collider2D>();
     }
 
-    void Update()
+    protected void Update()
     {
         HandleInput();
     }
 
-    void FixedUpdate()
+    protected void FixedUpdate()
     {
         CheckGround();
         HandleMovement();
     }
 
-    void HandleInput()
+    protected virtual void HandleInput()
     {
-        _inputDirection = new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
-
-        if (Input.GetButton("Jump"))
-        {
-            _isJumping = true;
-        }
-        else
-        {
-            _isJumping = false;
-        }
+       
     }
 
     void Jump()
