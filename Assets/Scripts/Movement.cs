@@ -12,16 +12,24 @@ public class Movement : MonoBehaviour
     public float GroundCheckRadius = 1f;
     public float MaxSlopeAngle = 45f;
 
+    public Cooldown CoyoteTime;
+    public Cooldown BufferJump;
+
     public LayerMask GroundLayerMask;
 
     protected bool _isGrounded = false;
     protected bool _isJumping = false;
+    protected bool _canJump = true;
+    protected bool _preJumpInput = false;
+    protected bool _isNearGround = false;
 
     protected Vector2 _inputDirection;
 
     protected Rigidbody2D _rigidbody2d;
     protected Collider2D _collider2d;
 
+    public bool IsJumping { get { return _isJumping; } }
+    public bool IsGrounded { get { return _isGrounded; } }
     void Start()
     {
         //cache for later use
@@ -38,6 +46,7 @@ public class Movement : MonoBehaviour
     {
         CheckGround();
         HandleMovement();
+        TryBuffer();
     }
 
     protected virtual void HandleInput()
@@ -45,12 +54,48 @@ public class Movement : MonoBehaviour
        
     }
 
-    void Jump()
+    protected virtual void TryBuffer()
     {
-        _rigidbody2d.velocity = new Vector2(_rigidbody2d.velocity.x, jumpForce);
-        Debug.Log("Jumping");
+        _isNearGround = Physics2D.OverlapCircle(GroundCheck.position, GroundCheckRadius*10, GroundLayerMask);
+
+        if (_rigidbody2d.velocity.y < 0 && !_isGrounded && _isNearGround)
+        {
+            BufferJump.StartCooldown();
+
+            if (Input.GetButton("Jump"))
+            {
+                Debug.Log("Jump Buffering");
+                _preJumpInput = true;
+            }
+        }
+
+        if (_isGrounded)
+        {
+            BufferJump.StopCooldown();
+        }
+
+        if (_isGrounded && _preJumpInput == true)
+        {
+            Jump();
+            _preJumpInput = false;
+        }
     }
-    void HandleMovement()
+
+    protected virtual void Jump()
+    {
+        if (!_canJump)
+            return;
+
+        if (CoyoteTime.CurrentProgress == Cooldown.Progress.Finished)
+            return;
+
+        _canJump = false;
+        _isJumping = true;
+        _rigidbody2d.velocity = new Vector2(_rigidbody2d.velocity.x, jumpForce);
+        CoyoteTime.StopCooldown();
+        //Debug.Log("Jumping");
+    }
+    protected virtual void HandleMovement()
     {
         Vector3 TargetVelocity = Vector3.zero;
         if (_isGrounded && !_isJumping)
@@ -68,14 +113,22 @@ public class Movement : MonoBehaviour
     void CheckGround()
     {
         _isGrounded = Physics2D.OverlapCircle(GroundCheck.position, GroundCheckRadius, GroundLayerMask);
-        Debug.Log("Grounded" + _isGrounded);
-        if (_isGrounded)
+        //Debug.Log("Grounded" + _isGrounded);
+
+        if(_rigidbody2d.velocity.y <= 0)
         {
-            if (_isJumping)
-            {
-                Jump();
-            }
+            _isJumping = false;
         }
-        
+
+        if (_isGrounded && !IsJumping)
+        {
+            _canJump = true;
+            if (CoyoteTime.CurrentProgress != Cooldown.Progress.Ready)
+                CoyoteTime.StopCooldown();
+            
+        }
+
+        if (!_isGrounded && !_isJumping && CoyoteTime.CurrentProgress == Cooldown.Progress.Ready)
+            CoyoteTime.StartCooldown();
     }
 }
