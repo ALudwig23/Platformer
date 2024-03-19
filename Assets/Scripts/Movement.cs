@@ -19,6 +19,8 @@ public class Movement : MonoBehaviour
 
     protected bool _isGrounded = false;
     protected bool _isJumping = false;
+    protected bool _isFalling = false;
+    protected bool _isRunning = false;
     protected bool _canJump = true;
     protected bool _preJumpInput = false;
     protected bool _isNearGround = false;
@@ -28,7 +30,9 @@ public class Movement : MonoBehaviour
     protected Rigidbody2D _rigidbody2d;
     protected Collider2D _collider2d;
 
+    public bool IsRunning { get { return _isRunning; } }
     public bool IsJumping { get { return _isJumping; } }
+    public bool IsFalling { get { return _isFalling; } }
     public bool IsGrounded { get { return _isGrounded; } }
     void Start()
     {
@@ -58,20 +62,16 @@ public class Movement : MonoBehaviour
     {
         _isNearGround = Physics2D.OverlapCircle(GroundCheck.position, GroundCheckRadius*10, GroundLayerMask);
 
-        if (_rigidbody2d.velocity.y < 0 && !_isGrounded && _isNearGround)
+        if (_rigidbody2d.velocity.y < 0 && !_isGrounded)
         {
-            BufferJump.StartCooldown();
+            _isJumping = false;
+            _isFalling = true;
 
-            if (Input.GetButton("Jump"))
+            if (Input.GetButton("Jump") && _isNearGround)
             {
                 Debug.Log("Jump Buffering");
                 _preJumpInput = true;
             }
-        }
-
-        if (_isGrounded)
-        {
-            BufferJump.StopCooldown();
         }
 
         if (_isGrounded && _preJumpInput == true)
@@ -108,6 +108,15 @@ public class Movement : MonoBehaviour
         }
         
         _rigidbody2d.velocity = TargetVelocity;
+
+        if (TargetVelocity.x == 0)
+        {
+            _isRunning = false;
+        }
+        else
+        {
+            _isRunning = true;
+        }
     }
 
     void CheckGround()
@@ -118,6 +127,7 @@ public class Movement : MonoBehaviour
         if(_rigidbody2d.velocity.y <= 0)
         {
             _isJumping = false;
+            _isFalling = false;
         }
 
         if (_isGrounded && !IsJumping)
