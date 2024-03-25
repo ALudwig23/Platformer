@@ -64,21 +64,12 @@ public class Movement : MonoBehaviour
 
         if (_rigidbody2d.velocity.y < 0 && !_isGrounded)
         {
-            BufferJump.StartCooldown();
-
-
             if (Input.GetButton("Jump"))
             {
                 Debug.Log("Jump Buffering");
                 _preJumpInput = true;
             }
         }
-
-        if (_isGrounded)
-        {
-            BufferJump.StopCooldown();
-        }
-
 
         if (_isGrounded && _preJumpInput == true)
         {
