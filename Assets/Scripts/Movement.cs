@@ -64,15 +64,21 @@ public class Movement : MonoBehaviour
 
         if (_rigidbody2d.velocity.y < 0 && !_isGrounded)
         {
-            _isJumping = false;
-            _isFalling = true;
+            BufferJump.StartCooldown();
 
-            if (Input.GetButton("Jump") && _isNearGround)
+
+            if (Input.GetButton("Jump"))
             {
                 Debug.Log("Jump Buffering");
                 _preJumpInput = true;
             }
         }
+
+        if (_isGrounded)
+        {
+            BufferJump.StopCooldown();
+        }
+
 
         if (_isGrounded && _preJumpInput == true)
         {
@@ -91,7 +97,11 @@ public class Movement : MonoBehaviour
 
         _canJump = false;
         _isJumping = true;
+
+
         _rigidbody2d.velocity = new Vector2(_rigidbody2d.velocity.x, jumpForce);
+        //Debug.Log("Holding Jump");
+        
         CoyoteTime.StopCooldown();
         //Debug.Log("Jumping");
     }
