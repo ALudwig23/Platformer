@@ -19,4 +19,23 @@ public class PlayerMovement : Movement
             _isJumping = false;
         }
     }
+
+    protected override void Jump()
+    {
+        if (!_canJump)
+            return;
+
+        if (CoyoteTime.CurrentProgress == Cooldown.Progress.Finished)
+            return;
+
+        _canJump = false;
+        _isJumping = true;
+
+
+        _rigidbody2d.velocity = new Vector2(_rigidbody2d.velocity.x, jumpForce);
+        //Debug.Log("Holding Jump");
+
+        CoyoteTime.StopCooldown();
+        //Debug.Log("Jumping");
+    }
 }

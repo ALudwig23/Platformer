@@ -12,6 +12,8 @@ public class Movement : MonoBehaviour
     public float GroundCheckRadius = 1f;
     public float MaxSlopeAngle = 45f;
 
+    public bool FlipAnim;
+
     public Cooldown CoyoteTime;
     public Cooldown BufferJump;
 
@@ -24,6 +26,7 @@ public class Movement : MonoBehaviour
     protected bool _canJump = true;
     protected bool _preJumpInput = false;
     protected bool _isNearGround = false;
+    
 
     protected Vector2 _inputDirection;
 
@@ -51,6 +54,7 @@ public class Movement : MonoBehaviour
         CheckGround();
         HandleMovement();
         TryBuffer();
+        Flip();
     }
 
     protected virtual void HandleInput()
@@ -69,6 +73,7 @@ public class Movement : MonoBehaviour
                 Debug.Log("Jump Buffering");
                 _preJumpInput = true;
             }
+            _isFalling = true;
         }
 
         if (_isGrounded && _preJumpInput == true)
@@ -141,5 +146,21 @@ public class Movement : MonoBehaviour
 
         if (!_isGrounded && !_isJumping && CoyoteTime.CurrentProgress == Cooldown.Progress.Ready)
             CoyoteTime.StartCooldown();
+    }
+
+    protected virtual void Flip()
+    {
+        if (_inputDirection.x == 0)
+            return;
+
+        if (_inputDirection.x > 0)
+        {
+            FlipAnim = false;
+        }
+
+        if (_inputDirection.x < 0)
+        {
+            FlipAnim = true;
+        }
     }
 }
