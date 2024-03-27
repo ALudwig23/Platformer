@@ -134,11 +134,13 @@ public class Movement : MonoBehaviour
         {
             _isJumping = false;
             _isFalling = false;
+            
         }
 
         if (_isGrounded && !IsJumping)
         {
             _canJump = true;
+            
             if (CoyoteTime.CurrentProgress != Cooldown.Progress.Ready)
                 CoyoteTime.StopCooldown();
             
